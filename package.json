@@ -1,0 +1,17 @@
+{
+  "name": "projetbackend",
+  "version": "1.0.0",
+  "description": "complete backend project logic",
+  "keywords": [
+    "javascript",
+    "backend",
+    "logic"
+  ],
+  "license": "ISC",
+  "author": "Shivam ojha",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
