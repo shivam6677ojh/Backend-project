@@ -3,7 +3,11 @@
 
 import dotenv from 'dotenv'
 import connectDB from "./db/index.js"
+import express from "express"
+ 
+const app = express()
 
+app.use(express.json());
 
 dotenv.config({
     path: './env'
@@ -13,12 +17,21 @@ connectDB()
 
 .then(() => {
     app.listen(process.env.PORT || 8000, () => {
-        console.log(`Server is running on PORT: ${process.env.PORT}`)
+        // console.log(`Server is running on PORT: ${process.env.PORT}`);
+        console.log(`Server is running on http://localhost:${process.env.PORT}`);
     });
 })
 .catch((err) => {
     console.log("MongoDB connection Failed: ", err);
 })
+
+import { userRouter } from './routes/user.routes.js';
+
+app.use('/api/v1/users', userRouter)
+
+// app.get('/', (req,res) => {
+//     res.send("Yes Api is working");
+// })
 
 
 /*
