@@ -29,9 +29,9 @@ import { userRouter } from './routes/user.routes.js';
 
 app.use('/api/v1/users', userRouter)
 
-// app.get('/', (req,res) => {
-//     res.send("Yes Api is working");
-// })
+app.get('/', (req,res) => {
+    res.send("Yes Api is working");
+})
 
 
 /*
