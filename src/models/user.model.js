@@ -7,7 +7,7 @@ const UserSchema = new Schema({
     username: {
         type: String,
         required: true,
-        unquie: true,
+        unique: true,
         lowercase: true,
         trim: true,
         index: true
@@ -58,8 +58,9 @@ UserSchema.pre('save',async function(next){
 UserSchema.methods.isCorrectPassword = async function name(password) {
     return await bcrypt.compare(password,this.password)
 }
+
 UserSchema.methods.genrateAccessToken = async function name() {
-    jwt.sign(
+    return jwt.sign(
         {
             _id: this.id, // this.id is form database currently we are assiging payload
             email: this.email,
@@ -74,17 +75,15 @@ UserSchema.methods.genrateAccessToken = async function name() {
 }
 
 UserSchema.methods.genrateRefreshToken = async function name() {
-    jwt.sign(
+    return jwt.sign(
         {
             _id: this.id, // this.id is form database currently we are assiging payload
-
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }
-
 
 export const user = mongoose.model("user", UserSchema)
