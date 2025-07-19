@@ -19,6 +19,7 @@ export const verifyJwt = (asynHandler(async (req, _, next) => {
         if (!storeuser) {
             throw new ApiHandleError(401, "Invalid access token");
         }
+        
         console.log("accessToken from cookie:", req.cookies?.accessToken);
         console.log("Authorization header:", req.header("Authorization"));
 

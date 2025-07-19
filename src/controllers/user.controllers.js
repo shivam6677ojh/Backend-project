@@ -221,32 +221,55 @@ const logoutUser = asynHandler(async (req, res) => {
 })
 
 const refreshaccessToken = asynHandler(async (req, res) => {
-    const incomingrefreshToken = req.cookies.refreshToken || req.body.refreshToken
+    try {
+        const incomingrefreshToken = req.cookies.refreshToken || req.body.refreshToken
 
-    if (!refreshaccessToken) {
-        throw new ApiHandleError(401, "Refresh token is required")
+        if (!refreshaccessToken) {
+            throw new ApiHandleError(401, "Refresh token is required")
+        }
+
+        const decodedToken = jwt.verify(
+            incomingrefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+
+        const User = await user.findById(decodedToken?._id);
+
+        if (!User) {
+            throw new ApiHandleError(401, "Invalid refreshToken")
+        }
+
+        if (incomingrefreshToken !== User?.refreshToken) {
+            throw new ApiHandleError(401, "Invalid mismath Token");
+        }
+
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+
+        const { accessToken, newrefreshToken } = await genrateAcessandRefreshToken(user._id);
+
+        return res
+
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newrefreshToken, options)
+            .json(
+                new ApiResponse(200,
+                    { accessToken, refreshToken: newrefreshToken },
+                    "Acess Token refreshed"
+                )
+            )
+    } catch (error) {
+        throw new ApiHandleError(401, error?.message || "Error occured while refreshing Token");
     }
-
-    const decodedToken = jwt.verify(
-        incomingrefreshToken,
-        process.env.REFRESH_TOKEN_SECRET
-    )
-
-    const User = await user.findById(decodedToken?._id);
-
-    if(!User){
-        throw new ApiHandleError(401, "Invalid refreshToken")
-    }
-
-    if(incomingrefreshToken!==User?.refreshToken){
-        throw new ApiHandleError(401, "Invalid mismath Token");
-    }
-
 
 })
 
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshaccessToken
 }
