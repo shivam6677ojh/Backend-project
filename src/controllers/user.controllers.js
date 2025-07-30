@@ -1,6 +1,6 @@
+import { user } from "../models/user.model.js"
 import { asynHandler } from "../utils/asynHandler.js";
 import { ApiHandleError } from "../utils/apierrorhandle.js";
-import { user } from "../models/user.model.js"
 import { uploadoncloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiresponse.js";
 import { verifyJwt } from "../middlewares/auth.middlewares.js";
@@ -40,7 +40,6 @@ const genrateAcessandRefreshToken = async (userId) => {
 
 
 const registerUser = asynHandler(async (req, res) => {
-
     // get data from user frontend
     // validation - non empty
     // check if user alredy exists: username, email
@@ -150,14 +149,12 @@ const loginUser = asynHandler(async (req, res) => {
 
     const { username, email, password } = req.body
     console.log(email)
-
-    if (!username && !email) {
-        throw new ApiHandleError(400, "username and password is required")
+    if (!(username && email)) {
+        throw new ApiHandleError(400, "username and password are required")
     }
-
     const Userdata = await user.findOne({
         $or: [{ email }, { username }]
-    })
+    }).select("+password");
 
     if (!Userdata) {
         throw new ApiHandleError(400, "Need atleast username or password no user exist")
@@ -166,7 +163,7 @@ const loginUser = asynHandler(async (req, res) => {
     const ispasswordvalidate = await Userdata.isCorrectPassword(password)
 
     if (!ispasswordvalidate) {
-        throw new ApiHandleError(401, "in valid password");
+        throw new ApiHandleError(401, "invalid password");
     }
 
     const { accessToken, refreshToken } = await genrateAcessandRefreshToken(Userdata._id)
@@ -266,9 +263,139 @@ const refreshaccessToken = asynHandler(async (req, res) => {
 
 })
 
+const changecurrentpassword = asynHandler(async (req, res) => {
+
+    const { oldpassword, newpassword, confirmpassword } = req.body
+
+    if (newpassword !== confirmpassword) {
+        throw new ApiHandleError(400, "password must be match")
+    }
+
+    const usr = user.findById(req.user?._id)
+
+    const isPasswordCorrect = await user.isCorrectPassword(oldpassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiHandleError(401, "Password is incorrect ");
+    }
+
+    usr.password = newpassword
+    usr.save({ validateBeforeSave: "false" })
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, {}, "password change successfullt")
+        )
+})
+
+const getCurrentUser = asynHandler(async (req, res) => {
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, req.user, "Get user successfully")
+        )
+})
+
+const updateAccountDetails = asynHandler(async (req, res) => {
+
+    const { fullname, email } = req.body;
+
+    if (!(fullname && email)) {
+        throw new ApiHandleError(400, "fullname and email is required");
+    }
+
+    const usr = user.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname: fullname,
+                email: email
+            }
+        },
+        { new: true }
+    ).select(
+        "-password"
+    )
+
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, usr, "updated Account successfully")
+        )
+})
+
+const updateUserAvtar = asynHandler(async (req, res) => {
+    const avtarloacalpath = req.file?.path
+
+    if(!avtarloacalpath){
+        throw new ApiHandleError(400,"Avtar file is missing");
+    }
+
+    const avtar = uploadoncloudinary(avtarloacalpath)
+
+    if(!avtar.url){
+        throw new ApiHandleError(400,"Error while uploading")
+    }
+
+    const us =  await user.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                avtar : avtar.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, us, "Avtar updated successfully")
+        )
+})
+const updateUserCoverAvtar = asynHandler(async (req, res) => {
+    const CoverImageloacalpath = req.file?.path
+
+    if(! CoverImageloacalpath ){
+        throw new ApiHandleError(400," CoverImageloacalpath file is missing");
+    }
+
+    const CoverImage = uploadoncloudinary(CoverImageloacalpath)
+
+    if(!CoverImage.url){
+        throw new ApiHandleError(400,"Error while uploading")
+    }
+
+    const us = await user.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                CoverImage : CoverImage.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, us, "Cover Image updated successfully")
+        )
+
+})
+
+
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    refreshaccessToken
+    refreshaccessToken,
+    changecurrentpassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvtar,
+    updateUserCoverAvtar
 }

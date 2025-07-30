@@ -1,6 +1,6 @@
 
 import { Router } from "express"
-import { loginUser, registerUser, logoutUser , refreshaccessToken} from "../controllers/user.controllers.js"
+import { loginUser, registerUser, logoutUser , refreshaccessToken, changecurrentpassword} from "../controllers/user.controllers.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { ApiHandleError } from "../utils/apierrorhandle.js"
 import { verifyJwt } from "../middlewares/auth.middlewares.js"
@@ -29,8 +29,6 @@ router.route('/login').post(loginUser)
 
 router.route('/logout').post(verifyJwt, logoutUser);
 router.route('/refresh-token').post(refreshaccessToken);
-
-
 
 
 export {router as userRouter}

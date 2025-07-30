@@ -11,8 +11,7 @@ const SubscriptionSchema = new mongoose.Schema(
             type: Schema.Types.ObjectId, // one to who subscriber is subscribing
             ref: "user"
         }
-        
-},
+    },
     {
         timestamps: true
     }
