@@ -329,24 +329,24 @@ const updateAccountDetails = asynHandler(async (req, res) => {
 const updateUserAvtar = asynHandler(async (req, res) => {
     const avtarloacalpath = req.file?.path
 
-    if(!avtarloacalpath){
-        throw new ApiHandleError(400,"Avtar file is missing");
+    if (!avtarloacalpath) {
+        throw new ApiHandleError(400, "Avtar file is missing");
     }
 
     const avtar = uploadoncloudinary(avtarloacalpath)
 
-    if(!avtar.url){
-        throw new ApiHandleError(400,"Error while uploading")
+    if (!avtar.url) {
+        throw new ApiHandleError(400, "Error while uploading")
     }
 
-    const us =  await user.findByIdAndUpdate(
-        req.user?._id,
+    const us = await user.findByIdAndUpdate(
+        req.user?._id,  // here may be error come if req.user is not defined
         {
-            $set:{
-                avtar : avtar.url
+            $set: {
+                avtar: avtar.url
             }
         },
-        {new: true}
+        { new: true }
     ).select("-password")
 
     return res
@@ -358,24 +358,24 @@ const updateUserAvtar = asynHandler(async (req, res) => {
 const updateUserCoverAvtar = asynHandler(async (req, res) => {
     const CoverImageloacalpath = req.file?.path
 
-    if(! CoverImageloacalpath ){
-        throw new ApiHandleError(400," CoverImageloacalpath file is missing");
+    if (!CoverImageloacalpath) {
+        throw new ApiHandleError(400, " CoverImageloacalpath file is missing");
     }
 
     const CoverImage = uploadoncloudinary(CoverImageloacalpath)
 
-    if(!CoverImage.url){
-        throw new ApiHandleError(400,"Error while uploading")
+    if (!CoverImage.url) {
+        throw new ApiHandleError(400, "Error while uploading")
     }
 
     const us = await user.findByIdAndUpdate(
-        req.user?._id,
+        req.user?._id, // here may be error come if req.user is not defined
         {
-            $set:{
-                CoverImage : CoverImage.url
+            $set: {
+                CoverImage: CoverImage.url
             }
         },
-        {new: true}
+        { new: true }
     ).select("-password")
 
     return res
@@ -384,7 +384,7 @@ const updateUserCoverAvtar = asynHandler(async (req, res) => {
             new ApiResponse(200, us, "Cover Image updated successfully")
         )
 
-})
+})  
 
 
 
